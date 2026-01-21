@@ -623,6 +623,7 @@ export default function App() {
       const messagesSnapshot = await getDocs(messagesRef);
       await Promise.all(messagesSnapshot.docs.map(doc => deleteDoc(doc.ref)));
 
+      const cluesRef = collection(db, 'artifacts', appId, 'public', 'data', 'game_clues');
       const cluesSnapshot = await getDocs(cluesRef);
       await Promise.all(cluesSnapshot.docs.map(doc => deleteDoc(doc.ref)));
 

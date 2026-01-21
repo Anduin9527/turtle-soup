@@ -10,7 +10,7 @@ import { GAME_MASTER_SYSTEM_PROMPT, buildGamePrompt, PUZZLE_GENERATOR_PROMPT, bu
 // Configuration
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const API_URL = import.meta.env.VITE_GEMINI_API_URL || "https://api.cetaceang.qzz.io/v1/chat/completions";
-const MODEL_NAME = "gemini-3-flash-preview";
+const MODEL_NAME = import.meta.env.VITE_GEMINI_MODEL || "gemini-3-flash-preview";
 
 if (!API_KEY) {
     console.warn("[AIService] No API key found. Set VITE_GEMINI_API_KEY in your .env file.");
