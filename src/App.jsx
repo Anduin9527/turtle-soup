@@ -44,7 +44,9 @@ import {
   RefreshCw,
   Sparkles,
   Loader2,
-  X
+  X,
+  MessageCircle, // For Mesugaki icon
+  TerminalSquare // For Terminal icon
 } from 'lucide-react';
 import { callGeminiGameMaster, isGeminiConfigured, generatePuzzle } from './lib/geminiService';
 
@@ -100,7 +102,7 @@ const DEMO_PUZZLE = {
  * @param {'QUERY' | 'SOLVE'} mode - 游戏模式
  * @param {Array} currentClues -已解锁的线索
  */
-const callGameEngine = async (userInput, mode, history, puzzleContext, currentClues = [], currentCompleteness = 0) => {
+const callGameEngine = async (userInput, mode, history, puzzleContext, currentClues = [], currentCompleteness = 0, persona = 'TERMINAL') => {
   // 使用 Gemini API
   if (isGeminiConfigured()) {
     return await callGeminiGameMaster(
@@ -110,7 +112,8 @@ const callGameEngine = async (userInput, mode, history, puzzleContext, currentCl
       mode,
       history,
       currentClues,
-      currentCompleteness
+      currentCompleteness,
+      persona
     );
   }
 
@@ -238,6 +241,7 @@ export default function App() {
   const [generationLock, setGenerationLock] = useState(null); // 全局生成锁 { isGenerating, by, timestamp }
   const [now, setNow] = useState(Date.now());
   const [worldCompleteness, setWorldCompleteness] = useState(0); // 世界观完整度 (0-100)
+  const [persona, setPersona] = useState('TERMINAL'); // 'TERMINAL' | 'MESUGAKI'
 
   // Custom Theme Modal State
   const [showNewGameModal, setShowNewGameModal] = useState(false);
@@ -531,7 +535,7 @@ export default function App() {
         .map(m => ({ role: m.senderId === 'AI' ? 'assistant' : 'user', content: m.text }));
 
       const currentClueTexts = clues.map(c => c.text);
-      const aiResponse = await callGameEngine(text, mode, recentHistory, currentPuzzle, currentClueTexts, worldCompleteness);
+      const aiResponse = await callGameEngine(text, mode, recentHistory, currentPuzzle, currentClueTexts, worldCompleteness, persona);
 
       // 3. 更新用户消息状态为 processed
       await updateDoc(userMsgRef, { status: 'processed' });
@@ -1032,6 +1036,14 @@ export default function App() {
             title="Toggle Theme"
           >
             {theme === 'night' ? <Sun size={14} className={THEME.primary} /> : <Moon size={14} className={THEME.primary} />}
+          </button>
+          <button
+            onClick={() => setPersona(persona === 'TERMINAL' ? 'MESUGAKI' : 'TERMINAL')}
+            className={`p-1 rounded ${THEME.border} border hover:opacity-80 transition-opacity flex items-center gap-1 px-2 ${persona === 'MESUGAKI' ? 'bg-pink-500/10 border-pink-500 text-pink-500' : ''}`}
+            title={persona === 'TERMINAL' ? "Switch to Personality Mode" : "Switch to Terminal Mode"}
+          >
+            {persona === 'TERMINAL' ? <TerminalSquare size={14} /> : <MessageCircle size={14} />}
+            <span className="text-[10px] font-bold hidden md:inline">{persona === 'TERMINAL' ? 'SYS' : 'U-14'}</span>
           </button>
           <div className="flex gap-2 items-center" title={`World Completeness: ${worldCompleteness}%`}>
             <span className={`text-[10px] uppercase font-bold ${THEME.textDim}`}>TRUTH</span>

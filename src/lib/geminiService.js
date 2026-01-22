@@ -5,7 +5,7 @@
  * Refactored to use OpenAI-compatible API endpoint.
  */
 
-import { GAME_MASTER_SYSTEM_PROMPT, buildGamePrompt, PUZZLE_GENERATOR_PROMPT, buildPuzzleGeneratorPrompt } from "./gamePrompt";
+import { getSystemPrompt, buildGamePrompt, PUZZLE_GENERATOR_PROMPT, buildPuzzleGeneratorPrompt } from "./gamePrompt";
 
 // Configuration
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
@@ -63,7 +63,7 @@ async function callOpenAICompatibleAPI(messages, responseFormat = null, temperat
 /**
  * Calls the AI Game Master
  */
-export async function callGeminiGameMaster(puzzleContent, puzzleTruth, userInput, mode, history = [], currentClues = [], currentCompleteness = 0) {
+export async function callGeminiGameMaster(puzzleContent, puzzleTruth, userInput, mode, history = [], currentClues = [], currentCompleteness = 0, persona = 'TERMINAL') {
     if (!API_KEY) {
         return {
             text: ">> [ERR_CONFIG] API key not configured. Please set VITE_GEMINI_API_KEY.",
@@ -76,7 +76,7 @@ export async function callGeminiGameMaster(puzzleContent, puzzleTruth, userInput
         // Construct messages
         // 1. System Prompt
         const messages = [
-            { role: "system", content: GAME_MASTER_SYSTEM_PROMPT }
+            { role: "system", content: getSystemPrompt(persona) }
         ];
 
         // 2. History (Optional: Insert history if needed for context, usually helpful)
@@ -87,7 +87,7 @@ export async function callGeminiGameMaster(puzzleContent, puzzleTruth, userInput
 
         // 3. Current User Input (wrapped with Puzzle Context and Truth via buildGamePrompt)
         // Note: buildGamePrompt encapsulates the "State" of the puzzle.
-        const userPrompt = buildGamePrompt(puzzleContent, puzzleTruth, userInput, mode, history, currentClues, currentCompleteness);
+        const userPrompt = buildGamePrompt(puzzleContent, puzzleTruth, userInput, mode, history, currentClues, currentCompleteness, persona);
         messages.push({ role: "user", content: userPrompt });
 
         // Call API with Redundancy (3 concurrent requests) to ensure reliability
